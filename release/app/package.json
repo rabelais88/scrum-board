@@ -1,0 +1,18 @@
+{
+  "name": "scrum-board",
+  "version": "4.6.0",
+  "description": "-",
+  "license": "MIT",
+  "author": {
+    "name": "Sungryeol Park",
+    "email": "sungryeolp@gmail.com",
+    "url": "https://github.com/rabelais88"
+  },
+  "main": "./dist/main/main.js",
+  "scripts": {
+    "rebuild": "node -r ts-node/register ../../.erb/scripts/electron-rebuild.js",
+    "postinstall": "npm run rebuild && npm run link-modules",
+    "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
+  },
+  "dependencies": {}
+}
