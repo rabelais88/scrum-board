@@ -14,7 +14,8 @@ export const storeDefault:StoreDataMap = {
   settings: {alwaysOnTop: false},
   scrums: [],
   tasks: [],
-  taskNowId: -1
+  taskNowId: -1,
+  opacity: .6
 }
 
 export function delimitKo(
@@ -76,14 +77,12 @@ export const formatDuration = (duration: number) => {
 };
 
 export const getDayStart = (date: string | Date) => {
-  return dayjs(date)    .set('hours', 0)
-  .set('minutes', 0)
-  .set('seconds', 0)
+  return dayjs(date).startOf('dates')
     .toDate();
 };
 
 export const getDayEnd = (date: string | Date) => {
-  return dayjs(date).set('hours', 23).set('minutes', 59).set('seconds', 0)
+  return dayjs(date).endOf('dates')
     .toDate();
 };
 

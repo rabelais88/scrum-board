@@ -170,3 +170,16 @@ export const useScrum = (scrumId: number) => {
   const [scrum] = useAtom(atomScrum)
   return scrum
 }
+
+const atomSettingsOpen = atom(false)
+
+export const useSettingsOpen = () => {
+  const [settingsOpen, setSettingsOpen] = useAtom(atomSettingsOpen)
+  return {settingsOpen, setSettingsOpen}
+}
+
+const atomScrumDetailShow = atom(true)
+export const useScrumDetailShow = () => {
+  const [scrumDetailShow, setScrumDetailShow] = useAtom(atomScrumDetailShow)
+  return { scrumDetailShow, setScrumDetailShow}
+}

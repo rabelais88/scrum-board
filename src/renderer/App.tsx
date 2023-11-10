@@ -5,29 +5,26 @@ import {
   useNavigate,
 } from 'react-router-dom';
 import { useAppStore } from './utils/store';
-import './App.css';
+import './main.css';
 import ScrumPage from './ScrumPage';
 import Layout from './components/Layout';
 import { formatDate, formatDuration, formatTimeOnly, getDiff } from '../utils';
 import CustomButton from './components/CustomButton';
+import ScrumMiniPage from './ScrumMiniPage';
+import { useEffect } from 'react';
+import { dispatchWin } from './utils';
 
 function Hello() {
   const { store, toggleAlwaysOnTop, addScrum, sortedScrums } = useAppStore();
   const nav = useNavigate();
+  useEffect(() => {
+    dispatchWin('win-size', 'normal');
+  }, []);
   return (
     <Layout
       className="flex items-center flex-col"
       title={<span>Scrum Board</span>}
     >
-      <p>always on top {store.settings.alwaysOnTop.toString()}</p>
-      <CustomButton
-        className="border border-black"
-        onClick={() => {
-          toggleAlwaysOnTop();
-        }}
-      >
-        always on top
-      </CustomButton>
       <div className="relative overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -49,7 +46,7 @@ function Hello() {
                 <td>SCM-{scrum.id}</td>
                 <td>{formatDate(scrum.startAt)}</td>
                 <td>{formatTimeOnly(scrum.startAt)}</td>
-                <td>{formatDuration(getDiff(scrum.startAt, scrum.endAt))}</td>
+                <td>{formatDuration(getDiff(scrum.endAt, scrum.startAt))}</td>
                 <td>
                   <button onClick={() => nav(`/scrum/${scrum.id}`)}>🔨</button>
                 </td>
@@ -69,6 +66,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Hello />} />
         <Route path="/scrum/:scrumId" element={<ScrumPage />} />
+        <Route path="/scrum-mini/:scrumId" element={<ScrumMiniPage />} />
       </Routes>
     </Router>
   );

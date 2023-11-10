@@ -26,12 +26,15 @@ declare interface StoreDataMap extends Record<string,any>{
   scrums: ScrumData[];
   tasks: TaskData[];
   taskNowId: number;
+  opacity: number;
 }
 
+declare type WindowSize = 'normal' | 'mini'
 
 declare interface ChannelMap<SK extends keyof StoreDataMap = keyof StoreDataMap> {
   'ipc-example': []
   'electron-store-get': [SK];
   'electron-store-set': [SK, StoreDataMap[SK]];
-  'always-on-top': [boolean]
+  'always-on-top': [boolean],
+  'win-size': [WindowSize]
 }

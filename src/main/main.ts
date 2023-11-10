@@ -8,13 +8,14 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
-import { BrowserWindow, app, ipcMain, shell } from 'electron';
+import { BrowserWindow, app, ipcMain, shell, screen } from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import { getData, setData } from './store';
 import MenuBuilder from './menu';
 import { resolveHtmlPath, onEventIPC } from './util';
+import { ENV } from '../utils/env';
 
 class AppUpdater {
   constructor() {
@@ -38,10 +39,22 @@ onEventIPC('electron-store-get', async (event, val) => {
 onEventIPC('electron-store-set', async(event, key, val) => {
   setData(key, val)
 })
+
 onEventIPC('always-on-top', async(event, val) => {
   if (val) mainWindow?.setAlwaysOnTop(true, 'floating')
   else mainWindow?.setAlwaysOnTop(false)
   setData('alwaysOnTop', val)
+})
+
+onEventIPC('win-size', async (event, val) => {
+  const {width, height} = screen.getPrimaryDisplay().workAreaSize
+  switch (val) {
+      case 'mini':
+        mainWindow?.setSize(ENV === 'development' ? 600: 300, 300)
+        break;
+      default:
+        mainWindow?.setSize(defaultWidth, height)
+  }
 })
 
 if (process.env.NODE_ENV === 'production') {
@@ -55,6 +68,9 @@ const isDebug =
 if (isDebug) {
   require('electron-debug')();
 }
+
+const defaultWidth = ENV === 'development' ? 1000 : 800;
+const defaultHeight = 600
 
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
@@ -81,18 +97,21 @@ const createWindow = async () => {
   const getAssetPath = (...paths: string[]): string => {
     return path.join(RESOURCES_PATH, ...paths);
   };
+  const {width, height} = screen.getPrimaryDisplay().workAreaSize
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: defaultWidth,
+    height: height ?? 600,
     icon: getAssetPath('icon.png'),
+    maximizable: false,
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
     titleBarStyle: 'hidden',
+    transparent: true,
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
@@ -107,6 +126,7 @@ const createWindow = async () => {
       const alwaysOnTop = getData('alwaysOnTop')
       console.log('alwaysOnTop', alwaysOnTop)
       mainWindow.setBackgroundColor('#00000000')
+
       mainWindow.show();
       if (alwaysOnTop) mainWindow.setAlwaysOnTop(true, 'floating')
     }

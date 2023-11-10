@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+*[data-comp='layout'] {
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+}
+*[data-comp='layout'] * {
+  -webkit-app-region: no-drag;
+}
+
+*[data-window-drag='true'] {
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+}
+
+@layer base {
+  :root {
+    --color-base-white: rgb(250, 248, 251);
+  }
+}
 /*
  * @NOTE: Prepend a `~` to css file paths that are in your node_modules
  *        See https://github.com/webpack-contrib/sass-loader#imports

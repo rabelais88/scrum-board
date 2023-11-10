@@ -1,10 +1,4 @@
-import {
-  InputHTMLAttributes,
-  PropsWithChildren,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -15,17 +9,18 @@ import {
   getDayEnd,
   getDayStart,
   getDiff,
-  joinClass,
   parseDuration,
   validDuration,
 } from '../utils';
+import CustomButton from './components/CustomButton';
+import CustomInput from './components/CustomInput';
 import DurationControl from './components/DurationControl';
 import IconBack from './components/IconBack';
 import InputControl from './components/InputControl';
 import Layout from './components/Layout';
 import { useAppStore, useScrum } from './utils/store';
-import CustomInput from './components/CustomInput';
-import CustomButton from './components/CustomButton';
+import { dispatchWin } from './utils';
+import dayjs from 'dayjs';
 
 function AddTask() {
   const params = useParams();
@@ -126,7 +121,7 @@ export default function ScrumPage() {
     (ac, cv) => ac + (cv?.durationMS ?? 0),
     0
   );
-  const availDuration = getDiff(scrum?.startAt ?? '', scrum?.endAt ?? '');
+  const availDuration = getDiff(scrum?.endAt ?? '', scrum?.startAt ?? '');
   const [strStart, setStrStart] = useState(
     formatTimeOnly(scrum?.startAt ?? new Date())
   );
@@ -134,10 +129,11 @@ export default function ScrumPage() {
     formatTimeOnly(scrum?.endAt ?? getDayEnd(new Date()))
   );
   useEffect(() => {
-    if (
-      validDuration(strStart) &&
-      formatTimeOnly(scrum?.startAt ?? new Date()) !== strStart
-    ) {
+    if (validDuration(strStart)) {
+      const isLater =
+        getDayStart(scrum?.startAt ?? new Date()).getTime() >
+        getDayEnd(scrum?.startAt ?? new Date()).getTime();
+      if (isLater) return;
       modifyScrum({
         id: scrumId,
         startAt: addDiff(
@@ -148,19 +144,27 @@ export default function ScrumPage() {
     }
   }, [strStart]);
   useEffect(() => {
-    if (
-      validDuration(strEnd) &&
-      formatTimeOnly(scrum?.endAt ?? new Date()) !== strEnd
-    ) {
+    const isLater =
+      getDayEnd(scrum?.endAt ?? new Date()).getTime() >
+      dayjs(scrum?.endAt)
+        .add(1, 'days')
+        .endOf('date')
+        .toDate()
+        .getTime();
+    if (isLater) return;
+    if (validDuration(strEnd)) {
       modifyScrum({
         id: scrumId,
-        startAt: addDiff(
-          getDayStart(scrum?.endAt ?? new Date()),
+        endAt: addDiff(
+          getDayStart(scrum?.startAt ?? new Date()),
           parseDuration(strEnd)
         ),
       });
     }
   }, [strEnd]);
+  useEffect(() => {
+    dispatchWin('win-size', 'normal');
+  }, []);
   return (
     <Layout
       className="flex flex-col gap-2"
@@ -170,7 +174,7 @@ export default function ScrumPage() {
             <span className="sr-only">뒤로가기</span>
             <IconBack />
           </CustomButton>
-          <span>SCM-{scrumId}</span>
+          <span data-window-drag>SCM-{scrumId}</span>
         </>
       }
     >
@@ -184,7 +188,7 @@ export default function ScrumPage() {
         id="message"
         rows="4"
         className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-        value={scrum?.blockNote}
+        value={scrum?.prevNote}
         onChange={(ev) => setPrevNote(scrumId, ev.target.value)}
         placeholder="Write your thoughts here..."
       />
@@ -204,7 +208,7 @@ export default function ScrumPage() {
       />
       <div className="relative overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 [&>tr]:h-[50px]">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 [&>tr]:h-[50px] [&_th]:pl-4">
             <tr>
               <th>start</th>
               <td className="flex items-center gap-2">
@@ -219,6 +223,7 @@ export default function ScrumPage() {
             <tr>
               <th>end</th>
               <td>
+                {formatDate(scrum?.endAt ?? '')}
                 <CustomInput
                   className="w-[100px]"
                   value={strEnd}
@@ -244,7 +249,7 @@ export default function ScrumPage() {
       <AddTask />
       <div className="relative overflow-x-auto sm:rounded-lg">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 [&_th]:h-[50px]">
             <tr>
               <th className="w-[70px]">finished</th>
               <th>name</th>
