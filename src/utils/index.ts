@@ -1,6 +1,7 @@
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import dayjs from 'dayjs'
 import Duration from 'dayjs/plugin/duration';
+import { ENV } from './env';
 
 dayjs.extend(Duration);
 dayjs.extend(customParseFormat);
@@ -15,7 +16,7 @@ export const storeDefault:StoreDataMap = {
   scrums: [],
   tasks: [],
   taskNowId: -1,
-  opacity: .6
+  opacity: ENV === 'development' ? 1 : .8
 }
 
 export function delimitKo(

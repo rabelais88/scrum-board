@@ -1,18 +1,18 @@
+import { useEffect } from 'react';
 import {
   Route,
   MemoryRouter as Router,
   Routes,
   useNavigate,
 } from 'react-router-dom';
-import { useAppStore } from './utils/store';
-import './main.css';
-import ScrumPage from './ScrumPage';
-import Layout from './components/Layout';
 import { formatDate, formatDuration, formatTimeOnly, getDiff } from '../utils';
-import CustomButton from './components/CustomButton';
 import ScrumMiniPage from './ScrumMiniPage';
-import { useEffect } from 'react';
+import ScrumPage from './ScrumPage';
+import CustomButton from './components/CustomButton';
+import Layout from './components/Layout';
+import './main.css';
 import { dispatchWin } from './utils';
+import { useAppStore } from './utils/store';
 
 function Hello() {
   const { store, toggleAlwaysOnTop, addScrum, sortedScrums } = useAppStore();
@@ -25,6 +25,9 @@ function Hello() {
       className="flex items-center flex-col"
       title={<span>Scrum Board</span>}
     >
+      <CustomButton className="mb-10" onClick={addScrum}>
+        add scrum
+      </CustomButton>
       <div className="relative overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -55,7 +58,6 @@ function Hello() {
           </tbody>
         </table>
       </div>
-      <CustomButton onClick={addScrum}>add scrum</CustomButton>
     </Layout>
   );
 }

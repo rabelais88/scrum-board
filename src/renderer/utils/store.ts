@@ -155,6 +155,7 @@ export const useAppStore = () => {
     setStore({...store, scrums: newScrums})
   }
 
+
   return {store, setStore, setAlwaysOnTop,
     toggleAlwaysOnTop, addTask,
     removeTask, modifyTask, modifyScrum,

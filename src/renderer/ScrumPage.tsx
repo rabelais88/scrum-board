@@ -62,6 +62,11 @@ const TaskItem = ({ task: t }: { task: TaskData }) => {
   const scrumId = Number(params.scrumId ?? '0');
   const [strDur, setStrDur] = useState(formatDuration(t?.durationMS ?? 0));
   const validDur = useMemo(() => validDuration(strDur), [strDur]);
+  const taskState = useMemo(() => {
+    if (t.finished) return 'finished';
+    if (t.id === store.taskNowId) return 'working';
+    return 'idle';
+  }, [t, store]);
   useEffect(() => {
     if (validDur) {
       modifyTask({ id: t.id, durationMS: parseDuration(strDur) });
@@ -75,9 +80,29 @@ const TaskItem = ({ task: t }: { task: TaskData }) => {
       className="data-[finished=true]:line-through"
     >
       <td>
-        <CustomButton onClick={() => toggleFinishTask(t?.id ?? 0)}>
-          ⛳
-        </CustomButton>
+        {taskState === 'idle' && (
+          <input
+            type="checkbox"
+            // @ts-ignore
+            defaultChecked={false}
+            onClick={() => setTaskNow(t.id)}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+          />
+        )}
+        {taskState === 'working' && (
+          <button onClick={() => modifyTask({ id: t.id, finished: true })}>
+            🛠️
+          </button>
+        )}
+        {taskState === 'finished' && (
+          <input
+            type="checkbox"
+            // @ts-ignore
+            defaultChecked
+            onClick={() => modifyTask({ id: t.id, finished: false })}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+          />
+        )}
       </td>
       <td
         data-active={store.taskNowId === t?.id}
@@ -99,12 +124,7 @@ const TaskItem = ({ task: t }: { task: TaskData }) => {
         </CustomButton>
       </td>
       <td>
-        <CustomButton
-          onClick={() => setTaskNow(t?.id)}
-          disabled={t?.id === store.taskNowId}
-        >
-          🏃‍♂️
-        </CustomButton>
+        <CustomButton onClick={() => {}}>👇</CustomButton>
       </td>
     </tr>
   );

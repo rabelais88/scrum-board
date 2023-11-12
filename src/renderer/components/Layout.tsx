@@ -19,7 +19,7 @@ const Layout = ({ className, children, title }: LayoutProps) => {
         ENV === 'development' ? '' : 'opacity-60',
         className
       )}
-      style={{ opacity: store.opacity }}
+      style={{ opacity: ENV === 'development' ? 1 : store.opacity }}
     >
       <div className="flex items-center w-full">
         <div className="flex-1">
