@@ -26,6 +26,8 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+const defaultWidth = ENV === 'development' ? 1000 : 800;
+const defaultHeight = 600
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -48,11 +50,15 @@ onEventIPC('always-on-top', async(event, val) => {
 
 onEventIPC('win-size', async (event, val) => {
   const {width, height} = screen.getPrimaryDisplay().workAreaSize
+const dispBoundary = screen.getPrimaryDisplay()?.bounds;
+const boundaryWidth = dispBoundary?.width
+const boundaryHeight = dispBoundary?.height
   switch (val) {
       case 'mini':
         mainWindow?.setSize(ENV === 'development' ? 600: 300, 300)
         break;
       default:
+        mainWindow?.setBounds({x:0,y:0, width: boundaryWidth, height: boundaryHeight})
         mainWindow?.setSize(defaultWidth, height)
   }
 })
@@ -69,8 +75,6 @@ if (isDebug) {
   require('electron-debug')();
 }
 
-const defaultWidth = ENV === 'development' ? 1000 : 800;
-const defaultHeight = 600
 
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
