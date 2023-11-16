@@ -1,9 +1,10 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useMemo } from 'react';
 import { joinClass } from '../../utils';
 import { ENV } from '../../utils/env';
 import { useAppStore, useSettingsOpen } from '../utils/store';
 import CustomButton from './CustomButton';
 import Settings from './Settings';
+import { useLocation } from 'react-router-dom';
 
 interface LayoutProps extends PropsWithClass, PropsWithChildren {
   title?: JSX.Element;
@@ -11,15 +12,21 @@ interface LayoutProps extends PropsWithClass, PropsWithChildren {
 const Layout = ({ className, children, title }: LayoutProps) => {
   const { settingsOpen, setSettingsOpen } = useSettingsOpen();
   const { store } = useAppStore();
+  const location = useLocation();
+  const minimized = useMemo(
+    () => /\/scrum-mini\/[A-z0-9]+/.test(location.pathname),
+    [location.pathname]
+  );
   return (
     <div
       data-comp="layout"
       className={joinClass(
         'relative bg-base-white dark:bg-base-black text-base-black dark:text-base-white min-h-screen p-5',
-        ENV === 'development' ? '' : 'opacity-60',
         className
       )}
-      style={{ opacity: ENV === 'development' ? 1 : store.opacity }}
+      style={{
+        opacity: ENV === 'development' || !minimized ? 1 : store.opacity,
+      }}
     >
       <div className="flex items-center w-full">
         <div className="flex-1">
