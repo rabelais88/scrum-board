@@ -1,10 +1,10 @@
 import { PropsWithChildren, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { joinClass } from '../../utils';
 import { ENV } from '../../utils/env';
 import { useAppStore, useSettingsOpen } from '../utils/store';
 import CustomButton from './CustomButton';
 import Settings from './Settings';
-import { useLocation } from 'react-router-dom';
 
 interface LayoutProps extends PropsWithClass, PropsWithChildren {
   title?: JSX.Element;
@@ -21,7 +21,7 @@ const Layout = ({ className, children, title }: LayoutProps) => {
     <div
       data-comp="layout"
       className={joinClass(
-        'relative bg-base-white dark:bg-base-black text-base-black dark:text-base-white min-h-screen p-5',
+        'relative bg-base-white dark:bg-base-black text-base-black dark:text-base-white min-h-screen p-5 pt-10',
         className
       )}
       style={{
@@ -33,7 +33,7 @@ const Layout = ({ className, children, title }: LayoutProps) => {
           {title && (
             <h1
               aria-roledescription="title area"
-              className="font-bold text-lg"
+              className="font-bold text-lg flex items-center"
               data-window-drag
             >
               {title}

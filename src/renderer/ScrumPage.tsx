@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -18,9 +19,8 @@ import DurationControl from './components/DurationControl';
 import IconBack from './components/IconBack';
 import InputControl from './components/InputControl';
 import Layout from './components/Layout';
-import { useAppStore, useScrum } from './utils/store';
 import { dispatchWin } from './utils';
-import dayjs from 'dayjs';
+import { useAppStore, useScrum } from './utils/store';
 
 function AddTask() {
   const params = useParams();
@@ -37,7 +37,12 @@ function AddTask() {
   };
   return (
     <div className="flex gap-2">
-      <InputControl control={control} name="title" placeholder="작업명" />
+      <InputControl
+        control={control}
+        name="title"
+        placeholder="작업명"
+        className="flex-1"
+      />
       <div className="relative before:content-['⌛'] before:absolute before:-translate-y-[50%] before:top-[50%]">
         <DurationControl
           control={control}
@@ -194,7 +199,9 @@ export default function ScrumPage() {
             <span className="sr-only">뒤로가기</span>
             <IconBack />
           </CustomButton>
-          <span data-window-drag>SCM-{scrumId}</span>
+          <div data-window-drag>
+            SCM-{scrumId} {formatDate(scrum?.startAt ?? new Date())}
+          </div>
         </>
       }
     >
@@ -231,24 +238,32 @@ export default function ScrumPage() {
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 [&>tr]:h-[50px] [&_th]:pl-4">
             <tr>
               <th>start</th>
-              <td className="flex items-center gap-2">
-                {formatDate(scrum?.startAt ?? '')}{' '}
-                <CustomInput
-                  value={strStart}
-                  onChange={(ev) => setStrStart(ev.target.value)}
-                  className="w-[100px]"
-                />
+              <td>
+                <div className="flex gap-2 items-center">
+                  <span className="w-[100px]">
+                    {formatDate(scrum?.startAt ?? '')}
+                  </span>
+                  <CustomInput
+                    value={strStart}
+                    onChange={(ev) => setStrStart(ev.target.value)}
+                    className="w-[100px]"
+                  />
+                </div>
               </td>
             </tr>
             <tr>
               <th>end</th>
               <td>
-                {formatDate(scrum?.endAt ?? '')}
-                <CustomInput
-                  className="w-[100px]"
-                  value={strEnd}
-                  onChange={(ev) => setStrEnd(ev.target.value)}
-                />
+                <div>
+                  <span className="sr-only">
+                    {formatDate(scrum?.endAt ?? '')}
+                  </span>
+                  <CustomInput
+                    className="w-[100px]"
+                    value={strEnd}
+                    onChange={(ev) => setStrEnd(ev.target.value)}
+                  />
+                </div>
               </td>
             </tr>
             <tr>
