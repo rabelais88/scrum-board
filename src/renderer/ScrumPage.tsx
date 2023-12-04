@@ -151,7 +151,12 @@ export default function ScrumPage() {
     formatTimeOnly(scrum?.startAt ?? new Date())
   );
   const [strEnd, setStrEnd] = useState(
-    formatTimeOnly(scrum?.endAt ?? getDayEnd(new Date()))
+    formatDuration(
+      getDiff(
+        scrum?.endAt ?? getDayEnd(new Date()),
+        getDayStart(scrum?.startAt ?? new Date())
+      )
+    )
   );
   useEffect(() => {
     if (validDuration(strStart)) {

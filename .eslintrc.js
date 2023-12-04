@@ -21,6 +21,7 @@ module.exports = {
     'react/require-default-props': 0,
     'react/jsx-props-no-spreading': 0,
     'consistent-return': 0,
+    'jsx-a11y/control-has-associated-label': 1,
   },
   parserOptions: {
     ecmaVersion: 2022,
