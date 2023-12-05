@@ -22,6 +22,10 @@ module.exports = {
     'react/jsx-props-no-spreading': 0,
     'consistent-return': 0,
     'jsx-a11y/control-has-associated-label': 1,
+    'import/order': 1,
+    'react-hooks/exhaustive-deps': 1,
+    'jsx-a11y/label-has-associated-control': 1,
+    'react/no-array-index-key': 1,
   },
   parserOptions: {
     ecmaVersion: 2022,

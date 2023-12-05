@@ -2,7 +2,8 @@ import { atom, useAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 import { useMemo } from 'react'
 import { dispatchWin, getDataWin, setDataWin } from '.'
-import { cutSeconds, storeDefault } from '../../utils'
+import { cutSeconds, getMonth, setMonth, storeDefault } from '../../utils'
+import dayjs from 'dayjs'
 
 const atomStore = atomWithStorage('store', storeDefault, {
   getItem(key, initialValue) {
@@ -183,4 +184,14 @@ const atomScrumDetailShow = atom(true)
 export const useScrumDetailShow = () => {
   const [scrumDetailShow, setScrumDetailShow] = useAtom(atomScrumDetailShow)
   return { scrumDetailShow, setScrumDetailShow}
+}
+
+export const atomMonthViewCursor = atom(dayjs(new Date()).startOf('month').toDate())
+export const useMonthView = () => {
+  const [monthViewCursor, setMonthViewCursor] = useAtom(atomMonthViewCursor)
+  const viewMonth = useMemo(() => getMonth(monthViewCursor),[monthViewCursor])
+  const setViewMonth = (month: number) => {
+    setMonthViewCursor(setMonth(monthViewCursor, month))
+  }
+  return {viewMonth, setViewMonth, monthViewCursor}
 }

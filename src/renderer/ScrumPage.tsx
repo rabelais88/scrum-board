@@ -21,6 +21,21 @@ import InputControl from './components/InputControl';
 import Layout from './components/Layout';
 import { dispatchWin } from './utils';
 import { useAppStore, useScrum } from './utils/store';
+import {
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS as dndCSS } from '@dnd-kit/utilities';
 
 function AddTask() {
   const params = useParams();
@@ -72,6 +87,13 @@ const TaskItem = ({ task: t }: { task: TaskData }) => {
     if (t.id === store.taskNowId) return 'working';
     return 'idle';
   }, [t, store]);
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: t.id });
+
+  const style = {
+    transform: dndCSS.Transform.toString(transform),
+    transition,
+  };
   useEffect(() => {
     if (validDur) {
       modifyTask({ id: t.id, durationMS: parseDuration(strDur) });
@@ -79,10 +101,13 @@ const TaskItem = ({ task: t }: { task: TaskData }) => {
   }, [validDur, strDur]);
   return (
     <tr
+      ref={setNodeRef}
       key={t?.id}
       data-id={t?.id}
       data-finished={t?.finished}
       className="data-[finished=true]:line-through"
+      style={style}
+      {...attributes}
     >
       <td>
         {taskState === 'idle' && (
@@ -112,6 +137,7 @@ const TaskItem = ({ task: t }: { task: TaskData }) => {
       <td
         data-active={store.taskNowId === t?.id}
         className="data-[active=true]:font-bold data-[active=true]:text-red-200"
+        {...listeners}
       >
         {t?.title}
       </td>
@@ -142,6 +168,7 @@ export default function ScrumPage() {
   const nav = useNavigate();
   const scrum = useScrum(scrumId);
   const tasks = (scrum?.tasksId ?? []).map(getTaskById);
+  const [tasksId, setTasksId] = useState([] as number[]);
   const totalUsedDuration = tasks.reduce(
     (ac, cv) => ac + (cv?.durationMS ?? 0),
     0
@@ -158,6 +185,17 @@ export default function ScrumPage() {
       )
     )
   );
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  useEffect(() => {
+    if (scrum?.tasksId) setTasksId(scrum.tasksId);
+  }, [scrum?.tasksId]);
+
   useEffect(() => {
     if (validDuration(strStart)) {
       const isLater =
@@ -195,6 +233,25 @@ export default function ScrumPage() {
   useEffect(() => {
     dispatchWin('win-size', 'normal');
   }, []);
+
+  const onDragEnd = (ev: DragEndEvent) => {
+    const { active, over } = ev;
+
+    if (over?.id && active.id !== over.id) {
+      // id가 number가 아닌 UniqueIdentifier라는 고유의 타입으로 되어있어 형변환을 해 주어야 함.
+      const newTasksId = [...tasksId];
+      const oldIndex = newTasksId.findIndex(
+        (tid) => tid === (active.id as number)
+      );
+      const newIndex = newTasksId.findIndex(
+        (tid) => tid === (over.id as number)
+      );
+      newTasksId[oldIndex] = over.id as number;
+      newTasksId[newIndex] = active.id as number;
+      modifyScrum({ id: scrum?.id as number, tasksId: newTasksId });
+    }
+  };
+
   return (
     <Layout
       className="flex flex-col gap-2"
@@ -218,7 +275,7 @@ export default function ScrumPage() {
       </label>
       <textarea
         id="message"
-        rows="4"
+        rows={4}
         className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         value={scrum?.prevNote}
         onChange={(ev) => setPrevNote(scrumId, ev.target.value)}
@@ -232,7 +289,7 @@ export default function ScrumPage() {
       </label>
       <textarea
         id="message"
-        rows="4"
+        rows={4}
         className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         value={scrum?.blockNote}
         onChange={(ev) => setBlockNote(scrumId, ev.target.value)}
@@ -298,9 +355,16 @@ export default function ScrumPage() {
             </tr>
           </thead>
           <tbody>
-            {tasks.map((t) => (
-              <TaskItem key={t?.id} task={t as TaskData} />
-            ))}
+            <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+              <SortableContext
+                items={tasksId}
+                strategy={verticalListSortingStrategy}
+              >
+                {tasksId.map((t) => (
+                  <TaskItem key={t} task={getTaskById(t) as TaskData} />
+                ))}
+              </SortableContext>
+            </DndContext>
           </tbody>
         </table>
       </div>

@@ -64,7 +64,7 @@ const ScrumMiniPage = () => {
   return (
     <Layout
       title={
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-sm">
           <button onClick={() => navigate('/')}>
             <IconBack />
           </button>
@@ -74,7 +74,7 @@ const ScrumMiniPage = () => {
         </div>
       }
     >
-      <table className="w-full">
+      <table className="w-full text-xs">
         <tbody>
           {tasks.map((task) => (
             <TaskItem key={task.id} task={task} />
