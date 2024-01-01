@@ -2,15 +2,13 @@ import { PropsWithChildren, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { joinClass } from '../../utils';
 import { ENV } from '../../utils/env';
-import { useAppStore, useSettingsOpen } from '../utils/store';
-import CustomButton from './CustomButton';
-import Settings from './Settings';
+import { useAppStore } from '../utils/store';
+import SettingsBar from './SettingsBar';
 
 interface LayoutProps extends PropsWithClass, PropsWithChildren {
   title?: JSX.Element;
 }
 const Layout = ({ className, children, title }: LayoutProps) => {
-  const { settingsOpen, setSettingsOpen } = useSettingsOpen();
   const { store } = useAppStore();
   const location = useLocation();
   const minimized = useMemo(
@@ -28,7 +26,7 @@ const Layout = ({ className, children, title }: LayoutProps) => {
         opacity: ENV === 'development' || !minimized ? 1 : store.opacity,
       }}
     >
-      <div className="flex items-center w-full">
+      <div className="flex items-center w-full flex-wrap gap-2">
         <div className="flex-1">
           {title && (
             <h1
@@ -40,16 +38,9 @@ const Layout = ({ className, children, title }: LayoutProps) => {
             </h1>
           )}
         </div>
-        <CustomButton onClick={() => setSettingsOpen(!settingsOpen)}>
-          ⚙️
-        </CustomButton>
+        <SettingsBar />
       </div>
       {children}
-      {settingsOpen && (
-        <div className="fixed right-6 top-6">
-          <Settings />
-        </div>
-      )}
     </div>
   );
 };

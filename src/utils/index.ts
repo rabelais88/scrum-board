@@ -4,6 +4,7 @@ import Duration from 'dayjs/plugin/duration';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import weekday from 'dayjs/plugin/weekday';
 import { ENV } from './env';
+
 dayjs.extend(weekday);
 dayjs.extend(updateLocale);
 dayjs.extend(Duration);
@@ -101,7 +102,7 @@ export const addDiff = (date: string | Date, milliseconds: number) => {
 };
 
 export const cutSeconds = (date: string | Date) => {
-  return dayjs(date).set('seconds', 0).toDate();
+  return dayjs(date).startOf('minute').toDate();
 };
 
 export const getMonth = (date: dayjs.ConfigType) => {

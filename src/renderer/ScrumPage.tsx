@@ -99,6 +99,7 @@ const TaskItem = ({ task: t }: { task: TaskData }) => {
       modifyTask({ id: t.id, durationMS: parseDuration(strDur) });
     }
   }, [validDur, strDur]);
+
   return (
     <tr
       ref={setNodeRef}
@@ -360,9 +361,15 @@ export default function ScrumPage() {
                 items={tasksId}
                 strategy={verticalListSortingStrategy}
               >
-                {tasksId.map((t) => (
-                  <TaskItem key={t} task={getTaskById(t) as TaskData} />
-                ))}
+                {tasksId.map((t) =>
+                  getTaskById(t) ? (
+                    <TaskItem key={t} task={getTaskById(t) as TaskData} />
+                  ) : (
+                    <tr data-task-id={t} className="sr-only">
+                      empty task
+                    </tr>
+                  )
+                )}
               </SortableContext>
             </DndContext>
           </tbody>

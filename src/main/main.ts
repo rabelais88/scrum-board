@@ -48,18 +48,16 @@ onEventIPC('always-on-top', async(event, val) => {
   setData('alwaysOnTop', val)
 })
 
-onEventIPC('win-size', async (event, val) => {
-  const {width, height} = screen.getPrimaryDisplay().workAreaSize
-const dispBoundary = screen.getPrimaryDisplay()?.bounds;
-const boundaryWidth = dispBoundary?.width
-const boundaryHeight = dispBoundary?.height
-  switch (val) {
+onEventIPC('win-size', async (event, windowMode) => {
+const winBounds = mainWindow?.getBounds()
+const whichScreen = screen.getDisplayNearestPoint({x: winBounds?.x ?? 1, y: winBounds?.y ?? 1});
+  switch (windowMode) {
       case 'mini':
         mainWindow?.setSize(ENV === 'development' ? 600: 300, 300)
         break;
       default:
-        mainWindow?.setBounds({x:0,y:0, width: boundaryWidth, height: boundaryHeight})
-        mainWindow?.setSize(defaultWidth, height)
+        mainWindow?.setBounds({x:0,y:0, width: whichScreen.bounds.width, height: whichScreen.bounds.height})
+        mainWindow?.setSize(defaultWidth, whichScreen.bounds.height)
   }
 })
 

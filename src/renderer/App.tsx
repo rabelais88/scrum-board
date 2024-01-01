@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   Route,
   MemoryRouter as Router,
@@ -24,23 +24,27 @@ import CustomButton from './components/CustomButton';
 import Layout from './components/Layout';
 import './main.css';
 import { dispatchWin } from './utils';
-import { useAppStore, useMonthView } from './utils/store';
+import { useAppStore, useMonthView, useScrumHint } from './utils/store';
 
 const DateCell = ({ scrums, date }: { scrums: ScrumData[]; date?: Date }) => {
   const monthDate = useMemo(() => getDate(date), [date]);
   const nav = useNavigate();
-  const [hover, setHover] = useState(false);
+  const { setScrumHintId, setScrumHintPos } = useScrumHint();
   if (!date) return <div className="h-full min-h-[50px]" />;
   return (
-    <div className="h-full min-h-[50px]">
+    <div className="h-full min-h-[50px] relative">
       <div className="border-b">{monthDate}</div>
       {scrums.map((scrum) => (
         <button
           data-scrum-id={scrum.id}
           className="text-xs hover:bg-pink-300 px-1 py-[2px] rounded-sm"
           onClick={() => nav(`/scrum/${scrum.id}`)}
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
+          onMouseEnter={() => setScrumHintId(scrum.id)}
+          onMouseMove={(ev) => {
+            setScrumHintPos([ev.screenX, ev.screenY]);
+            setScrumHintId(scrum.id);
+          }}
+          onMouseLeave={() => setScrumHintId(-1)}
         >
           SCM-{scrum.id}
         </button>
@@ -48,6 +52,27 @@ const DateCell = ({ scrums, date }: { scrums: ScrumData[]; date?: Date }) => {
     </div>
   );
 };
+
+function ScrumHint() {
+  const { scrumHintId, scrumHintPos } = useScrumHint();
+  const { scrums } = useAppStore();
+  const scrum = useMemo(
+    () => scrums.find((s) => s.id === scrumHintId),
+    [scrums, scrumHintId]
+  );
+  if (scrumHintId === -1 || !scrum) return null;
+  return (
+    <div
+      className="fixed bg-[rgba(0,0,0,.5)] text-white z-50 p-2 rounded-md"
+      style={{ left: scrumHintPos[0], top: scrumHintPos[1] }}
+    >
+      <p>SCM-{scrum.id}</p>
+      <p>{formatDate(scrum.startAt)}</p>
+      <p>start: {formatTimeOnly(scrum.startAt)}</p>
+      <p>duration: {formatDuration(getDiff(scrum.endAt, scrum.startAt))}</p>
+    </div>
+  );
+}
 
 function AppMain() {
   const { addScrum, sortedScrums } = useAppStore();
@@ -93,6 +118,7 @@ function AppMain() {
       className="flex items-center flex-col"
       title={<span>Scrum Board</span>}
     >
+      <ScrumHint />
       <CustomButton className="mb-10" onClick={addScrum}>
         add scrum
       </CustomButton>
@@ -146,10 +172,6 @@ function AppMain() {
           <tbody>
             {sortedScrums.map((scrum) => (
               <tr key={scrum.id} className="[&>td]:px-6 [&>td]:py-4">
-                {/* <CustomButton
-                    onClick={() => nav(`/scrum/${scrum.id}`)}
-                    className="flex gap-2"
-                  > */}
                 <td>SCM-{scrum.id}</td>
                 <td>{formatDate(scrum.startAt)}</td>
                 <td>{formatTimeOnly(scrum.startAt)}</td>

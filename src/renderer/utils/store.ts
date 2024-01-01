@@ -2,7 +2,7 @@ import { atom, useAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 import { useMemo } from 'react'
 import { dispatchWin, getDataWin, setDataWin } from '.'
-import { cutSeconds, getMonth, setMonth, storeDefault } from '../../utils'
+import { cutSeconds, getDayEnd, getMonth, setMonth, storeDefault } from '../../utils'
 import dayjs from 'dayjs'
 
 const atomStore = atomWithStorage('store', storeDefault, {
@@ -85,7 +85,7 @@ export const useAppStore = () => {
     const newScrum: ScrumData = {
       id: newScrumId,
       startAt: cutSeconds(new Date()),
-      endAt: cutSeconds(new Date()),
+      endAt: getDayEnd(new Date()),
       tasksId: [],
       blockNote: '',
       prevNote: ''
@@ -173,12 +173,6 @@ export const useScrum = (scrumId: number) => {
   return scrum
 }
 
-const atomSettingsOpen = atom(false)
-
-export const useSettingsOpen = () => {
-  const [settingsOpen, setSettingsOpen] = useAtom(atomSettingsOpen)
-  return {settingsOpen, setSettingsOpen}
-}
 
 const atomScrumDetailShow = atom(true)
 export const useScrumDetailShow = () => {
@@ -194,4 +188,12 @@ export const useMonthView = () => {
     setMonthViewCursor(setMonth(monthViewCursor, month))
   }
   return {viewMonth, setViewMonth, monthViewCursor}
+}
+
+export const atomScrumHintId = atom(-1)
+export const atomScrumHintPos = atom([0,0])
+export const useScrumHint = () => {
+  const [scrumHintId, setScrumHintId] = useAtom(atomScrumHintId)
+  const [scrumHintPos, setScrumHintPos] = useAtom(atomScrumHintPos)
+  return {scrumHintId, setScrumHintId, setScrumHintPos, scrumHintPos}
 }
