@@ -38,7 +38,10 @@ const DateCell = ({ scrums, date }: { scrums: ScrumData[]; date?: Date }) => {
         <button
           data-scrum-id={scrum.id}
           className="text-xs hover:bg-pink-300 px-1 py-[2px] rounded-sm"
-          onClick={() => nav(`/scrum/${scrum.id}`)}
+          onClick={() => {
+            setScrumHintId(-1);
+            nav(`/scrum/${scrum.id}`);
+          }}
           onMouseEnter={() => setScrumHintId(scrum.id)}
           onMouseMove={(ev) => {
             setScrumHintPos([ev.screenX, ev.screenY]);
@@ -78,6 +81,7 @@ function AppMain() {
   const { addScrum, sortedScrums } = useAppStore();
   const nav = useNavigate();
   const { viewMonth, setViewMonth, monthViewCursor } = useMonthView();
+  const { setScrumHintId } = useScrumHint();
   const mapScrums = useMemo(() => {
     return d3.group(
       sortedScrums,
@@ -177,7 +181,14 @@ function AppMain() {
                 <td>{formatTimeOnly(scrum.startAt)}</td>
                 <td>{formatDuration(getDiff(scrum.endAt, scrum.startAt))}</td>
                 <td>
-                  <button onClick={() => nav(`/scrum/${scrum.id}`)}>🔨</button>
+                  <button
+                    onClick={() => {
+                      setScrumHintId(-1);
+                      nav(`/scrum/${scrum.id}`);
+                    }}
+                  >
+                    🔨
+                  </button>
                 </td>
               </tr>
             ))}

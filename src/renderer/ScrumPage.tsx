@@ -1,5 +1,13 @@
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState } from 'react';
+import {
+  ButtonHTMLAttributes,
+  HTMLAttributes,
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -10,6 +18,7 @@ import {
   getDayEnd,
   getDayStart,
   getDiff,
+  joinClass,
   parseDuration,
   validDuration,
 } from '../utils';
@@ -36,6 +45,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS as dndCSS } from '@dnd-kit/utilities';
+import { useFloating } from '@floating-ui/react';
 
 function AddTask() {
   const params = useParams();
@@ -44,6 +54,7 @@ function AddTask() {
   const defaultValues: Omit<TaskData, 'id' | 'finished' | 'childTasksId'> = {
     title: '',
     durationMS: 30 * 60 * 1_000,
+    state: 'idle',
   };
   const { control, handleSubmit } = useForm({ defaultValues });
   const onAddTask = (task: typeof defaultValues) => {
@@ -70,6 +81,44 @@ function AddTask() {
   );
 }
 
+const StateBadge = ({
+  taskState,
+  className,
+  onChange,
+}: {
+  taskState: TaskState;
+  onChange: (ts: TaskState) => void;
+} & PropsWithClass) => {
+  const mapLabel: Record<TaskState, string> = {
+    idle: 'IDLE',
+    wip: 'WIP',
+    done: 'DONE',
+    block: 'BLOCKED',
+  };
+  return (
+    <select
+      className={joinClass(
+        'appearance-none focus:outline-none',
+        'bg-slate-300 px-1 py-0.5 rounded-sm font-semibold text-xs',
+        'data-[state=idle]:bg-slate-300 data-[state=idle]:text-slate-800',
+        'data-[state=wip]:bg-blue-300 data-[state=wip]:text-blue-800',
+        'data-[state=done]:bg-green-300 data-[state=done]:text-green-800',
+        'data-[state=block]:bg-red-400 data-[state=block]:text-red-800',
+        className
+      )}
+      value={taskState}
+      data-state={taskState}
+      // @ts-ignore
+      onChange={(ev) => onChange(ev.target.value)}
+    >
+      <option value="idle">{mapLabel.idle}</option>
+      <option value="wip">{mapLabel.wip}</option>
+      <option value="done">{mapLabel.done}</option>
+      <option value="block">{mapLabel.block}</option>
+    </select>
+  );
+};
+
 const TaskItem = ({ task: t }: { task: TaskData }) => {
   const {
     toggleFinishTask,
@@ -82,11 +131,7 @@ const TaskItem = ({ task: t }: { task: TaskData }) => {
   const scrumId = Number(params.scrumId ?? '0');
   const [strDur, setStrDur] = useState(formatDuration(t?.durationMS ?? 0));
   const validDur = useMemo(() => validDuration(strDur), [strDur]);
-  const taskState = useMemo(() => {
-    if (t.finished) return 'finished';
-    if (t.id === store.taskNowId) return 'working';
-    return 'idle';
-  }, [t, store]);
+  const taskState = useMemo(() => t.state, [t, store]);
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: t.id });
 
@@ -105,35 +150,16 @@ const TaskItem = ({ task: t }: { task: TaskData }) => {
       ref={setNodeRef}
       key={t?.id}
       data-id={t?.id}
-      data-finished={t?.finished}
+      data-finished={t?.state === 'done'}
       className="data-[finished=true]:line-through"
       style={style}
       {...attributes}
     >
       <td>
-        {taskState === 'idle' && (
-          <input
-            type="checkbox"
-            // @ts-ignore
-            defaultChecked={false}
-            onClick={() => setTaskNow(t.id)}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-          />
-        )}
-        {taskState === 'working' && (
-          <button onClick={() => modifyTask({ id: t.id, finished: true })}>
-            🛠️
-          </button>
-        )}
-        {taskState === 'finished' && (
-          <input
-            type="checkbox"
-            // @ts-ignore
-            defaultChecked
-            onClick={() => modifyTask({ id: t.id, finished: false })}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-          />
-        )}
+        <StateBadge
+          taskState={taskState}
+          onChange={(ts) => modifyTask({ id: t.id, state: ts })}
+        />
       </td>
       <td
         data-active={store.taskNowId === t?.id}
@@ -255,7 +281,7 @@ export default function ScrumPage() {
 
   return (
     <Layout
-      className="flex flex-col gap-2"
+      className="flex flex-col gap-2 overflow-x-auto"
       title={
         <>
           <CustomButton onClick={() => nav('/')} className="mr-2">
@@ -345,11 +371,11 @@ export default function ScrumPage() {
         </table>
       </div>
       <AddTask />
-      <div className="relative overflow-x-auto sm:rounded-lg">
+      <div className="relative sm:rounded-lg">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 [&_th]:h-[50px]">
             <tr>
-              <th className="w-[70px]">finished</th>
+              <th className="w-[70px]">state</th>
               <th>name</th>
               <th>duration</th>
               <th colSpan={2}>edit</th>

@@ -1,49 +1,64 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { formatDate, formatDuration } from '../utils';
+import { formatDate, formatDuration, joinClass } from '../utils';
 import Layout from './components/Layout';
 import { dispatchWin } from './utils';
 import { useAppStore, useScrum } from './utils/store';
 import IconBack from './components/IconBack';
 
+const StateBadge = ({
+  taskState,
+  className,
+  onChange,
+}: {
+  taskState: TaskState;
+  onChange: (ts: TaskState) => void;
+} & PropsWithClass) => {
+  const mapLabel: Record<TaskState, string> = {
+    idle: '💤',
+    wip: '🛠️',
+    done: '✅',
+    block: '🚨',
+  };
+  return (
+    <select
+      className={joinClass(
+        'appearance-none focus:outline-none',
+        'bg-slate-300 px-1 py-0.5 rounded-sm font-semibold text-xs',
+        'data-[state=idle]:bg-slate-300 data-[state=idle]:text-slate-800',
+        'data-[state=wip]:bg-blue-300 data-[state=wip]:text-blue-800',
+        'data-[state=done]:bg-green-300 data-[state=done]:text-green-800',
+        'data-[state=block]:bg-red-400 data-[state=block]:text-red-800',
+        className
+      )}
+      data-state={taskState}
+      value={taskState}
+      // @ts-ignore
+      onChange={(ev) => onChange(ev.target.value)}
+    >
+      <option value="idle">{mapLabel.idle}</option>
+      <option value="wip">{mapLabel.wip}</option>
+      <option value="done">{mapLabel.done}</option>
+      <option value="block">{mapLabel.block}</option>
+    </select>
+  );
+};
+
 const TaskItem = ({ task }: { task: TaskData }) => {
   const params = useParams();
   const scrumId = Number(params.scrumId ?? '0');
   const { modifyTask, store, setTaskNow } = useAppStore();
-  const taskState = useMemo(() => {
-    if (task.finished) return 'finished';
-    if (task.id === store.taskNowId) return 'working';
-    return 'idle';
-  }, [task, store]);
+  const taskState = useMemo(() => task.state, [task]);
   return (
     <tr
-      data-finished={task.finished}
+      data-finished={task?.state === 'done'}
       className="data-[finished=true]:line-through [&_th]:text-left"
     >
       <th>
-        {taskState === 'idle' && (
-          <input
-            type="checkbox"
-            // @ts-ignore
-            defaultChecked={false}
-            onClick={() => setTaskNow(task.id)}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-          />
-        )}
-        {taskState === 'working' && (
-          <button onClick={() => modifyTask({ id: task.id, finished: true })}>
-            🛠️
-          </button>
-        )}
-        {taskState === 'finished' && (
-          <input
-            type="checkbox"
-            // @ts-ignore
-            defaultChecked
-            onClick={() => modifyTask({ id: task.id, finished: false })}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-          />
-        )}
+        <StateBadge
+          taskState={taskState}
+          onChange={(ts) => modifyTask({ id: task.id, state: ts })}
+        />
       </th>
       <th>{task.title}</th>
       <td>{formatDuration(task.durationMS)}</td>
