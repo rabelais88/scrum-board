@@ -396,6 +396,11 @@ export default function ScrumPage() {
                     </tr>
                   )
                 )}
+                {tasksId.length === 0 && (
+                  <tr>
+                    <td colSpan={4}>no task registered</td>
+                  </tr>
+                )}
               </SortableContext>
             </DndContext>
           </tbody>

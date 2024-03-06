@@ -92,8 +92,13 @@ const ScrumMiniPage = () => {
       <table className="w-full text-xs">
         <tbody>
           {tasks.map((task) => (
-            <TaskItem key={task.id} task={task} />
+            <TaskItem key={task?.id} task={task as TaskData} />
           ))}
+          {tasks.length === 0 && (
+            <tr>
+              <span>no task registered</span>
+            </tr>
+          )}
         </tbody>
       </table>
     </Layout>
