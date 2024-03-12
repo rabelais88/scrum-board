@@ -19,6 +19,7 @@ const StateBadge = ({
     wip: '🛠️',
     done: '✅',
     block: '🚨',
+    fail: '🥺',
   };
   return (
     <select
@@ -29,6 +30,7 @@ const StateBadge = ({
         'data-[state=wip]:bg-blue-300 data-[state=wip]:text-blue-800',
         'data-[state=done]:bg-green-300 data-[state=done]:text-green-800',
         'data-[state=block]:bg-red-400 data-[state=block]:text-red-800',
+        'data-[state=fail]:bg-red-400 data-[state=fail]:text-red-800',
         className
       )}
       data-state={taskState}
@@ -40,6 +42,7 @@ const StateBadge = ({
       <option value="wip">{mapLabel.wip}</option>
       <option value="done">{mapLabel.done}</option>
       <option value="block">{mapLabel.block}</option>
+      <option value="fail">{mapLabel.fail}</option>
     </select>
   );
 };
@@ -79,7 +82,7 @@ const ScrumMiniPage = () => {
   return (
     <Layout
       title={
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2 text-sm pl-14 pt-2">
           <button onClick={() => navigate('/')}>
             <IconBack />
           </button>

@@ -2,7 +2,7 @@ declare interface PropsWithClass {
   className?: string;
 }
 
-declare type TaskState = 'idle' | 'block' | 'wip' | 'done';
+declare type TaskState = 'idle' | 'block' | 'wip' | 'done' | 'fail';
 declare interface TaskData {
   id: number;
   title: string;

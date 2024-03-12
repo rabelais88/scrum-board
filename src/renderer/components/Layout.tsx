@@ -19,7 +19,7 @@ const Layout = ({ className, children, title }: LayoutProps) => {
     <div
       data-comp="layout"
       className={joinClass(
-        'relative bg-base-white dark:bg-base-black text-base-black dark:text-base-white min-h-screen p-5 pt-10',
+        'relative bg-base-white dark:bg-base-black text-base-black dark:text-base-white min-h-screen p-5 pt-0 sm:pt-10',
         className
       )}
       style={{

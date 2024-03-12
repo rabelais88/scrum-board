@@ -94,6 +94,7 @@ const StateBadge = ({
     wip: 'WIP',
     done: 'DONE',
     block: 'BLOCKED',
+    fail: 'FAIL',
   };
   return (
     <select
@@ -104,6 +105,7 @@ const StateBadge = ({
         'data-[state=wip]:bg-blue-300 data-[state=wip]:text-blue-800',
         'data-[state=done]:bg-green-300 data-[state=done]:text-green-800',
         'data-[state=block]:bg-red-400 data-[state=block]:text-red-800',
+        'data-[state=fail]:bg-red-400 data-[state=fail]:text-red-800',
         className
       )}
       value={taskState}
@@ -115,6 +117,7 @@ const StateBadge = ({
       <option value="wip">{mapLabel.wip}</option>
       <option value="done">{mapLabel.done}</option>
       <option value="block">{mapLabel.block}</option>
+      <option value="fail">{mapLabel.fail}</option>
     </select>
   );
 };
